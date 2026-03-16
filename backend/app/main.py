@@ -73,15 +73,57 @@ def _bucket_position(left_pct: float, top_pct: float, w_pct: float, h_pct: float
     return f"{vert}-{horiz}"
 
 
+def _relative_direction(left_pct: float, top_pct: float, w_pct: float, h_pct: float) -> str:
+    """
+    Turn screen-space box into user-facing direction cues.
+    Assumption: user is seated facing the camera/device.
+    """
+    cx = left_pct + (w_pct / 2.0)
+    cy = top_pct + (h_pct / 2.0)
+
+    if cx < 35.0:
+        lr = "to your left"
+    elif cx > 65.0:
+        lr = "to your right"
+    else:
+        lr = "in front of you"
+
+    if cy < 33.0:
+        ud = "higher up"
+    elif cy > 70.0:
+        ud = "lower down"
+    else:
+        ud = ""
+
+    return f"{lr}{', ' + ud if ud else ''}"
+
+
+def _distance_hint(w_pct: float, h_pct: float) -> str:
+    """
+    Very rough distance proxy from box area.
+    Larger boxes are likely closer; smaller boxes likely farther.
+    """
+    area = max(0.0, w_pct) * max(0.0, h_pct)
+    if area >= 900.0:
+        return "very close"
+    if area >= 450.0:
+        return "close"
+    if area >= 180.0:
+        return "a bit farther"
+    return "farther away"
+
+
 def _fallback_transcript(objs: list[DetectedObject], user_prompt: str | None) -> str:
     if not objs:
-        base = "I don't see any clear objects in this image."
+        base = "I don't see any clear objects in front of you right now."
     else:
-        parts: list[str] = []
+        lines: list[str] = []
         for o in objs[:8]:
-            pos = _bucket_position(*o.box)
-            parts.append(f"{o.label} ({int(o.confidence * 100)}%) at {pos}")
-        base = "I see " + ", ".join(parts) + "."
+            left, top, w, h = o.box
+            direction = _relative_direction(left, top, w, h)
+            dist = _distance_hint(w, h)
+            lines.append(f"{o.label} {direction}, {dist}.")
+        base = "Here is what I notice around you: " + " ".join(lines)
     if user_prompt:
         return base + f" You asked: {user_prompt.strip()}"
     return base
@@ -90,16 +132,21 @@ def _fallback_transcript(objs: list[DetectedObject], user_prompt: str | None) ->
 def _build_narration_prompt(objs: list[DetectedObject], user_prompt: str | None) -> tuple[str, str]:
     system = (
         "You are an assistive narrator for blind and low-vision users. "
-        "Given object detections from an image, produce a single, clear spoken narration. "
+        "The user is seated facing a laptop or device camera. "
+        "Given object detections from a camera frame, produce a clear spoken narration that helps the user navigate. "
+        "Describe objects relative to the user (for example: in front of you, to your left, to your right, higher up, lower down, close, farther away). "
+        "Do NOT say 'on the screen' or reference pixel coordinates. "
         "Keep it under 2-3 short sentences, avoid jargon, and do not invent objects not in the detections. "
-        "If detections are sparse or uncertain, say so plainly."
+        "If detections are sparse or uncertain, say so plainly. "
+        "If multiple instances of the same label exist, summarize."
     )
     detections = [
         {
             "label": o.label,
             "confidence": round(o.confidence, 3),
             "box_percent": [round(v, 2) for v in o.box],
-            "position_bucket": _bucket_position(*o.box),
+            "relative_direction": _relative_direction(*o.box),
+            "distance_hint": _distance_hint(o.box[2], o.box[3]),
         }
         for o in objs
     ]
