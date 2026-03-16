@@ -74,74 +74,8 @@ Describe the scene briefly for a blind user.
 
 ---
 
-# API Response
 
-The API returns a JSON response containing detected objects and narration.
-
-```json
-{
-  "objects": [
-    {
-      "label": "chair",
-      "confidence": 0.93,
-      "box": [0.21, 0.32, 0.45, 0.62]
-    }
-  ],
-  "transcript": "There is a chair in front of you and a table slightly to the left.",
-  "audio_url": "/static/audio/output_123.wav"
-}
-Response Fields
-Field	Description
-objects	YOLO detected objects with bounding boxes
-transcript	Generated natural language description of the scene
-audio_url	Optional synthesized speech file
-
-Bounding boxes are returned in percentage units relative to the image size.
-
-Logic Flow
-
-The user captures an image from a webcam or uploads a photo.
-
-The image is sent to the backend via POST /analyze.
-
-The backend runs YOLO object detection to identify objects in the scene.
-
-The detected objects are formatted and passed into Nemotron (if configured).
-
-Nemotron generates a short, natural language scene description designed for blind or low-vision users.
-
-The generated text is optionally converted into speech using a TTS engine.
-
-The API returns:
-
-detected objects
-
-narration transcript
-
-generated audio file URL.
-
-If Nemotron is not configured, the system falls back to a local narration generator.
-
-Setup Instructions
-1. Navigate to the backend
-cd backend
-2. Create a virtual environment
-python3 -m venv .venv
-3. Activate the environment
-
-Mac / Linux:
-
-source .venv/bin/activate
-
-Windows:
-
-.venv\Scripts\activate
-4. Install dependencies
-pip install -e ".[tts]"
-5. Start the server
-uvicorn app.main:app --reload --port 8000
-
-The API will be available at:
+ill be available at:
 
 http://localhost:8000
 Testing the API
