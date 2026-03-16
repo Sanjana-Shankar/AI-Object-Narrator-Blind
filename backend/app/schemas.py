@@ -16,4 +16,6 @@ class AnalyzeResponse(BaseModel):
     objects: list[DetectedObject]
     transcript: str
     audio_url: str | None = None
-
+    narration_source: str = Field(description="nemotron|fallback")
+    nemotron_model: str | None = None
+    request_id: str

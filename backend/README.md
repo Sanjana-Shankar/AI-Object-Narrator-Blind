@@ -28,7 +28,9 @@ curl -s -X POST "http://localhost:8000/analyze" \
 
 ## Environment
 
-- `CORS_ORIGINS`: Comma-separated origins. Default: `http://localhost:5173`
+You can set variables in your shell, or create `backend/.env` (ignored by git).
+
+- `CORS_ORIGINS`: Comma-separated origins. Default: `http://localhost:8080`
 - `YOLO_MODEL_PATH`: Path/name for Ultralytics YOLO model. Default: `yolov8n.pt`
 - `YOLO_DEVICE`: `cpu`, `0`, `0,1`, etc. Default: `cpu`
 - `YOLO_CONF`: Confidence threshold (0-1). Default: `0.25`
@@ -36,10 +38,15 @@ curl -s -X POST "http://localhost:8000/analyze" \
 
 Nemotron (optional):
 
-- `NEMOTRON_BASE_URL`: Base URL for an OpenAI-compatible server (for NVIDIA NIM, point at its URL)
-- `NEMOTRON_API_KEY`: API key/bearer token
-- `NEMOTRON_MODEL`: Model name/id (for example a Nemotron instruct model on your endpoint)
+- `NEMOTRON_BASE_URL`: Default `https://integrate.api.nvidia.com/v1`
+- `NVIDIA_API_KEY`: NVIDIA Integrate API key (preferred)
+- `NEMOTRON_API_KEY`: Alternate name for the same key
+- `NEMOTRON_MODEL`: Default `nvidia/nemotron-3-super-120b-a12b`
 - `NEMOTRON_TIMEOUT_S`: Default: `45`
+- `NEMOTRON_ENABLE_THINKING`: Default: `true`
+- `NEMOTRON_REASONING_BUDGET`: Optional integer
+- `NEMOTRON_MAX_TOKENS`: Default: `1024`
+- `REQUIRE_NEMOTRON`: If `true`, `/analyze` errors if Nemotron is not configured
 
 TTS (optional):
 

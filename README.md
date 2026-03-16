@@ -91,9 +91,13 @@ Nemotron is used to generate higher-quality scene descriptions.
 
 Set the following environment variables:
 
-export NEMOTRON_BASE_URL=<nemotron_endpoint>
-export NEMOTRON_MODEL=<model_name>
-export NEMOTRON_API_KEY=<your_api_key>
+export NEMOTRON_BASE_URL="https://integrate.api.nvidia.com/v1"
+export NEMOTRON_MODEL="nvidia/nemotron-3-super-120b-a12b"
+export NVIDIA_API_KEY="<your_nvidia_api_key>"
+
+Alternative key name:
+
+export NEMOTRON_API_KEY="<your_api_key>"
 
 If these variables are not set, the backend will automatically use a local fallback narration generator.
 

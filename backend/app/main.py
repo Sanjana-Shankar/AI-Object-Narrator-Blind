@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import uuid
+import logging
 
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,7 @@ settings = get_settings()
 storage = get_storage_paths()
 
 app = FastAPI(title="AI Object Narrator Backend", version="0.1.0")
+logger = logging.getLogger("ai_object_narrator")
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,13 +51,16 @@ tts = TtsSynthesizer(
 )
 
 nemotron: NemotronClient | None = None
-if settings.nemotron_base_url and settings.nemotron_model:
+if settings.nemotron_base_url and settings.nemotron_model and settings.nemotron_api_key:
     nemotron = NemotronClient(
         NemotronConfig(
             base_url=settings.nemotron_base_url,
             api_key=settings.nemotron_api_key,
             model=settings.nemotron_model,
             timeout_s=settings.nemotron_timeout_s,
+            enable_thinking=settings.nemotron_enable_thinking,
+            reasoning_budget=settings.nemotron_reasoning_budget,
+            max_tokens=settings.nemotron_max_tokens,
         )
     )
 
@@ -115,6 +120,7 @@ def health() -> dict[str, str]:
 async def analyze(
     image: UploadFile = File(...),
     prompt: str | None = Form(default=None),
+    language: str | None = Form(default=None),
 ) -> AnalyzeResponse:
     if not image.filename:
         raise HTTPException(status_code=400, detail="Missing filename")
@@ -124,6 +130,7 @@ async def analyze(
         raise HTTPException(status_code=400, detail="File must be an image")
 
     upload_id = str(uuid.uuid4())
+    request_id = upload_id
     ext = Path(image.filename).suffix or ".jpg"
     upload_path = storage.uploads / f"{upload_id}{ext}"
 
@@ -149,12 +156,36 @@ async def analyze(
     ]
 
     transcript = ""
+    narration_source = "fallback"
+    if nemotron is None and settings.require_nemotron:
+        raise HTTPException(status_code=500, detail="Nemotron is required but not configured (set NVIDIA_API_KEY).")
+
     if nemotron is not None:
         system, user = _build_narration_prompt(objects, prompt)
+        lang = (language or "").strip()
+        if lang:
+            system = system + f" Respond in {lang}."
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ]
         try:
-            transcript = await nemotron.narrate(system=system, user=user)
-        except Exception:
+            # OpenAI SDK streaming is synchronous; run it in a thread.
+            import anyio
+
+            transcript = await anyio.to_thread.run_sync(lambda: nemotron.narrate(messages=messages))
+            if transcript:
+                narration_source = "nemotron"
+        except Exception as e:
             transcript = ""
+            if settings.require_nemotron:
+                raise HTTPException(status_code=502, detail=f"Nemotron call failed: {e}")
+    elif settings.require_nemotron:
+        # Redundant safety net: if Nemotron is required, we should never be here.
+        raise HTTPException(status_code=500, detail="Nemotron is required but not available.")
+
+    if settings.require_nemotron and not transcript:
+        raise HTTPException(status_code=502, detail="Nemotron returned empty narration.")
     if not transcript:
         transcript = _fallback_transcript(objects, prompt)
 
@@ -166,4 +197,19 @@ async def analyze(
     except Exception:
         audio_url = None
 
-    return AnalyzeResponse(objects=objects, transcript=transcript, audio_url=audio_url)
+    logger.info(
+        "analyze request_id=%s objects=%d narration_source=%s nemotron=%s",
+        request_id,
+        len(objects),
+        narration_source,
+        settings.nemotron_model if narration_source == "nemotron" else "none",
+    )
+
+    return AnalyzeResponse(
+        objects=objects,
+        transcript=transcript,
+        audio_url=audio_url,
+        narration_source=narration_source,
+        nemotron_model=settings.nemotron_model if narration_source == "nemotron" else None,
+        request_id=request_id,
+    )
