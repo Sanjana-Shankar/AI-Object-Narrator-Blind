@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-object-narrator-backend"
+version = "0.1.0"
+description = "Backend API for AI Object Narrator (YOLO + Nemotron + TTS)"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.23",
+  "python-multipart>=0.0.9",
+  "pillow>=10.0",
+  "numpy>=1.26",
+  "httpx>=0.27",
+  # YOLO runtime (downloads weights on first run unless you provide a local path)
+  "ultralytics>=8.3.0",
+]
+
+[project.optional-dependencies]
+tts = [
+  "pyttsx3>=2.90",
+]
+
+[tool.uvicorn]
+factory = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]

@@ -11,20 +11,21 @@ import LandingView from "@/components/dashboard/LandingView";
 const Dashboard = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [isLive, setIsLive] = useState(false);
-  const { objects, transcript, status, connect, disconnect } = useNarrator(isLive);
+  const [ttsEnabled, setTtsEnabled] = useState(true);
+  const { objects, currentObjects, transcript, status, isAnalyzing, speechStatus, lastError, videoRef, connect, disconnect, captureAndAnalyze, speakTranscript } = useNarrator(isLive, { autoSpeak: ttsEnabled });
 
-  const handleStart = () => {
+  const handleStart = async () => {
     setHasStarted(true);
-    connect();
+    await connect();
     setIsLive(true);
   };
 
-  const handleToggleLive = () => {
+  const handleToggleLive = async () => {
     if (isLive) {
       disconnect();
       setIsLive(false);
     } else {
-      connect();
+      await connect();
       setIsLive(true);
     }
   };
@@ -71,14 +72,25 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Camera + Transcript */}
         <section className="lg:col-span-8 space-y-6">
-          <CameraFeed isLive={isLive} objects={objects} onStartFeed={handleToggleLive} />
-          <TranscriptPanel transcript={transcript} />
+          <CameraFeed
+            isLive={isLive}
+            objects={currentObjects}
+            onStartFeed={handleToggleLive}
+            onCapture={() => captureAndAnalyze()}
+            isAnalyzing={isAnalyzing}
+            videoRef={videoRef}
+          />
+          <TranscriptPanel
+            transcript={lastError ? `Error: ${lastError}` : transcript}
+            onSpeak={() => speakTranscript()}
+            isSpeaking={speechStatus === "speaking"}
+          />
         </section>
 
         {/* Right: Sidebar panels */}
         <aside className="lg:col-span-4 space-y-6">
           <DetectedObjectsList objects={objects} />
-          <SettingsPanel />
+          <SettingsPanel ttsEnabled={ttsEnabled} onTtsEnabledChange={setTtsEnabled} />
         </aside>
       </main>
     </div>

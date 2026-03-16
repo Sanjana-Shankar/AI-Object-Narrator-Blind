@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Camera, Zap, Eye, Shield } from "lucide-react";
 
 interface LandingViewProps {
-  onStart: () => void;
+  onStart: () => void | Promise<void>;
 }
 
 const features = [

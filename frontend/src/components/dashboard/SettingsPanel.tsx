@@ -3,15 +3,17 @@ import { useState } from "react";
 interface ToggleProps {
   label: string;
   defaultActive?: boolean;
+  active?: boolean;
   onChange?: (active: boolean) => void;
 }
 
-const AccessibilityToggle = ({ label, defaultActive = false, onChange }: ToggleProps) => {
-  const [active, setActive] = useState(defaultActive);
+const AccessibilityToggle = ({ label, defaultActive = false, active: controlled, onChange }: ToggleProps) => {
+  const [uncontrolled, setUncontrolled] = useState(defaultActive);
+  const active = controlled ?? uncontrolled;
 
   const toggle = () => {
     const next = !active;
-    setActive(next);
+    if (controlled === undefined) setUncontrolled(next);
     onChange?.(next);
   };
 
@@ -39,7 +41,12 @@ const AccessibilityToggle = ({ label, defaultActive = false, onChange }: ToggleP
   );
 };
 
-const SettingsPanel = () => {
+interface SettingsPanelProps {
+  ttsEnabled: boolean;
+  onTtsEnabledChange: (enabled: boolean) => void;
+}
+
+const SettingsPanel = ({ ttsEnabled, onTtsEnabledChange }: SettingsPanelProps) => {
   return (
     <div
       className="bg-card border-thick border-border rounded-2xl p-6"
@@ -51,7 +58,7 @@ const SettingsPanel = () => {
       </h2>
       <div className="space-y-2">
         <AccessibilityToggle label="High Contrast Mode" defaultActive />
-        <AccessibilityToggle label="Text-to-Speech" defaultActive />
+        <AccessibilityToggle label="Text-to-Speech" active={ttsEnabled} onChange={onTtsEnabledChange} />
         <AccessibilityToggle label="Sound Effects" defaultActive={false} />
         <AccessibilityToggle label="Large Labels" defaultActive={false} />
       </div>

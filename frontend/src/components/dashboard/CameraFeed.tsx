@@ -1,16 +1,21 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { DetectedObject } from "@/hooks/useNarrator";
+import { Camera } from "lucide-react";
+import type React from "react";
 
 interface CameraFeedProps {
   isLive: boolean;
   objects: DetectedObject[];
-  onStartFeed: () => void;
+  onStartFeed: () => void | Promise<void>;
+  onCapture: () => void | Promise<void>;
+  isAnalyzing: boolean;
+  videoRef: React.RefObject<HTMLVideoElement>;
 }
 
-const CameraFeed = ({ isLive, objects, onStartFeed }: CameraFeedProps) => {
+const CameraFeed = ({ isLive, objects, onStartFeed, onCapture, isAnalyzing, videoRef }: CameraFeedProps) => {
   return (
     <div className="relative aspect-video bg-card rounded-2xl border-thick border-border overflow-hidden">
-      {/* Mock camera feed background */}
+      {/* Live camera preview */}
       <div className="absolute inset-0 bg-secondary flex items-center justify-center">
         {!isLive ? (
           <button
@@ -22,8 +27,14 @@ const CameraFeed = ({ isLive, objects, onStartFeed }: CameraFeedProps) => {
           </button>
         ) : (
           <>
-            {/* Simulated camera view */}
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary via-card to-muted opacity-80" />
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 w-full h-full object-cover"
+              aria-label="Live camera preview"
+            />
             {/* Grid overlay for camera feel */}
             <div
               className="absolute inset-0 opacity-10"
@@ -42,9 +53,19 @@ const CameraFeed = ({ isLive, objects, onStartFeed }: CameraFeedProps) => {
               </span>
               <span className="text-xs font-bold uppercase tracking-widest text-destructive">REC</span>
             </div>
-            {/* FPS counter */}
-            <div className="absolute top-4 right-4 z-10 bg-background/60 backdrop-blur-sm px-3 py-1 rounded-lg">
-              <span className="text-xs font-mono text-muted-foreground">30 FPS</span>
+            {/* Capture */}
+            <div className="absolute bottom-4 left-4 z-10 flex items-center gap-3">
+              <button
+                onClick={onCapture}
+                disabled={isAnalyzing}
+                className="inline-flex items-center gap-2 px-5 py-3 bg-background/80 backdrop-blur-sm border-thick border-border rounded-xl shadow-brutal-sm hover:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
+                aria-label="Capture photo and analyze"
+              >
+                <Camera className="w-5 h-5" aria-hidden="true" />
+                <span className="text-sm font-bold uppercase tracking-wide">
+                  {isAnalyzing ? "ANALYZING..." : "CAPTURE + ANALYZE"}
+                </span>
+              </button>
             </div>
           </>
         )}

@@ -3,18 +3,26 @@ import { Volume2 } from "lucide-react";
 
 interface TranscriptPanelProps {
   transcript: string;
+  onSpeak?: () => void;
+  isSpeaking?: boolean;
 }
 
-const TranscriptPanel = ({ transcript }: TranscriptPanelProps) => {
+const TranscriptPanel = ({ transcript, onSpeak, isSpeaking }: TranscriptPanelProps) => {
   return (
     <div
       className="bg-card border-thick border-border rounded-2xl p-6 min-h-[120px] flex items-start gap-4"
       role="region"
       aria-label="Voice narration transcript"
     >
-      <div className="p-3 bg-accent/20 rounded-xl flex-shrink-0" aria-hidden="true">
-        <Volume2 className="text-accent w-6 h-6" />
-      </div>
+      <button
+        type="button"
+        onClick={onSpeak}
+        disabled={!onSpeak || !transcript}
+        className="p-3 bg-accent/20 rounded-xl flex-shrink-0 border border-transparent hover:border-accent/40 disabled:opacity-60 disabled:cursor-not-allowed"
+        aria-label={isSpeaking ? "Speaking narration" : "Speak narration"}
+      >
+        <Volume2 className="text-accent w-6 h-6" aria-hidden="true" />
+      </button>
       <div className="flex-1 min-w-0">
         <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-bold mb-2">
           Voice Narration
