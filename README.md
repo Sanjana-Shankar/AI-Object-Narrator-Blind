@@ -1,30 +1,118 @@
-# AI-Object-Narrator-Blind
-AI Object Narrator is a web application that helps blind and low-vision users understand their surroundings. Using a webcam, YOLO object detection, and NVIDIA-accelerated AI, the system identifies nearby objects and narrates them in real time. It converts visual scenes into clear spoken descriptions, improving accessibility, situational awareness.
+# AI Object Narrator for the Blind
 
-## Backend (YOLO + Nemotron + TTS)
+AI Object Narrator is an accessibility-focused web application designed to help **blind and low-vision users understand their surroundings**. The system uses a webcam feed, **YOLO-based object detection**, and **AI-generated narration** to convert visual scenes into **clear spoken descriptions in real time**.
 
-The backend lives in `backend/` and exposes `POST /analyze` which accepts an image upload and returns:
+By identifying nearby objects and narrating them through speech, the application improves **situational awareness and environmental understanding** for visually impaired users.
 
-- `objects`: YOLO detections (label, confidence, box in % units)
-- `transcript`: short narration (Nemotron if configured, otherwise a local fallback)
-- `audio_url`: optional synthesized speech audio (served from `GET /static/audio/...`)
+---
 
-Quick start:
+# Features
 
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[tts]"
-uvicorn app.main:app --reload --port 8000
-```
+- Real-time **Object Detection** using YOLO
+- **Scene narration generation** using NVIDIA Nemotron (with a fallback narration system if Nemotron is not configured)
+- **Text-to-Speech (TTS)** audio narration
+- **Accessible audio output** for visually impaired users
+- **REST API backend** for image analysis
+- **GPU acceleration support** when available
 
-Test it with curl:
+---
 
-```bash
+# System Architecture
+
+The system follows a pipeline that converts visual input into narrated audio.
+
+
+Webcam / Image Input
+│
+▼
+YOLO Object Detection
+│
+▼
+Detected Objects + Scene Context
+│
+▼
+Nemotron LLM (Scene Description Generation)
+│
+▼
+Text-to-Speech (TTS)
+│
+▼
+Spoken Narration Output
+
+
+---
+
+# Backend Overview
+
+The backend is located in:
+
+
+backend/
+
+
+It exposes a REST API endpoint that processes images and returns detected objects along with a generated narration.
+
+## Endpoint
+
+
+POST /analyze
+
+
+## Request
+
+The endpoint accepts **multipart form data**.
+
+| Field | Type | Description |
+|------|------|-------------|
+| image | file | Image captured from webcam or uploaded by the user |
+| prompt | string | Optional instruction for narration generation |
+
+Example prompt:
+
+
+Describe the scene briefly for a blind user.
+
+---
+
+
+ill be available at:
+
+http://localhost:8000
+Testing the API
+
+You can test the endpoint using curl.
+
 curl -s -X POST "http://localhost:8000/analyze" \
   -F "image=@/path/to/photo.jpg" \
   -F "prompt=Describe the scene briefly for a blind user" | jq .
-```
+Nemotron Setup (Optional)
 
-Nemotron setup (optional): set `NEMOTRON_BASE_URL`, `NEMOTRON_MODEL`, and `NEMOTRON_API_KEY` in your environment.
+Nemotron is used to generate higher-quality scene descriptions.
+
+Set the following environment variables:
+
+export NEMOTRON_BASE_URL=<nemotron_endpoint>
+export NEMOTRON_MODEL=<model_name>
+export NEMOTRON_API_KEY=<your_api_key>
+
+If these variables are not set, the backend will automatically use a local fallback narration generator.
+
+Technologies Used
+
+Python
+
+FastAPI
+
+YOLO Object Detection
+
+NVIDIA Nemotron LLM
+
+Text-to-Speech (TTS)
+
+Uvicorn
+
+Computer Vision and AI pipelines
+
+Accessibility Goal
+
+The goal of this project is to explore how computer vision and generative AI can improve accessibility for blind and low-vision individuals by transforming visual information into natural language audio descriptions.
