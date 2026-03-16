@@ -13,7 +13,7 @@ const features = [
 
 const LandingView = ({ onStart }: LandingViewProps) => {
   return (
-    <div className="min-h-svh bg-background flex items-center justify-center p-6">
+    <div className="min-h-svh app-surface flex items-center justify-center p-6">
       <div className="max-w-2xl text-center">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}

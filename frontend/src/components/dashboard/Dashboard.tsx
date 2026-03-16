@@ -35,7 +35,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-svh bg-background text-foreground p-4 md:p-8 selection:bg-primary selection:text-primary-foreground">
+    <div className="min-h-svh app-surface text-foreground p-4 md:p-8 selection:bg-primary selection:text-primary-foreground">
       {/* Header */}
       <header className="max-w-7xl mx-auto flex flex-wrap justify-between items-center mb-8 gap-4">
         <div className="flex items-center gap-3">

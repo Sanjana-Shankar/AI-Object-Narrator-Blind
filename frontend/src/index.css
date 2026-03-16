@@ -1,57 +1,104 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Geist+Sans:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 8%;
-    --foreground: 0 0% 96%;
+    /* Default: bright, accessible light theme */
+    --background: 38 60% 98%;
+    --foreground: 222 47% 11%;
 
-    --card: 0 0% 11%;
-    --card-foreground: 0 0% 96%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 0 0% 11%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 38 92% 50%;
-    --primary-foreground: 0 0% 5%;
+    --primary: 214 90% 40%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 38 35% 94%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 35 22% 92%;
+    --muted-foreground: 215 16% 35%;
 
-    --accent: 217 91% 60%;
-    --accent-foreground: 0 0% 96%;
+    --accent: 32 96% 50%;
+    --accent-foreground: 222 47% 11%;
 
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 5%;
+    --success: 150 60% 35%;
+    --success-foreground: 210 40% 98%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 96%;
+    --destructive: 0 84% 54%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 38 92% 50%;
+    --border: 214 20% 84%;
+    --input: 214 20% 84%;
+    --ring: 214 90% 40%;
 
     --radius: 1rem;
 
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 38 92% 50%;
-    --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 38 92% 50%;
+    --sidebar-background: 38 60% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 214 90% 40%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 38 35% 94%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 20% 84%;
+    --sidebar-ring: 214 90% 40%;
 
-    --shadow-brutal: 0 4px 0 0 rgba(0,0,0,1);
-    --shadow-brutal-sm: 0 2px 0 0 rgba(0,0,0,1);
+    --shadow-brutal: 0 8px 0 0 rgba(15, 23, 42, 0.92);
+    --shadow-brutal-sm: 0 4px 0 0 rgba(15, 23, 42, 0.92);
+  }
+
+  /* Optional dark theme (only if you add `class="dark"` on <html> or <body>) */
+  .dark {
+    --background: 222 30% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 26% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 26% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 32 96% 55%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 222 20% 16%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 18% 18%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 214 90% 55%;
+    --accent-foreground: 210 40% 98%;
+
+    --success: 150 55% 45%;
+    --success-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 18% 22%;
+    --input: 222 18% 22%;
+    --ring: 32 96% 55%;
+
+    --sidebar-background: 222 30% 8%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 32 96% 55%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 222 20% 16%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 222 18% 22%;
+    --sidebar-ring: 32 96% 55%;
+
+    --shadow-brutal: 0 8px 0 0 rgba(0, 0, 0, 0.95);
+    --shadow-brutal-sm: 0 4px 0 0 rgba(0, 0, 0, 0.95);
   }
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   * {
@@ -80,6 +127,15 @@
 }
 
 @layer utilities {
+  .app-surface {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(1200px 700px at 18% 12%, hsl(var(--accent) / 0.12), transparent 55%),
+      radial-gradient(900px 600px at 86% 22%, hsl(var(--primary) / 0.10), transparent 55%),
+      radial-gradient(700px 520px at 35% 92%, hsl(var(--success) / 0.10), transparent 60%),
+      linear-gradient(0deg, hsl(var(--background)), hsl(var(--background)));
+  }
+
   .shadow-brutal {
     box-shadow: var(--shadow-brutal);
   }
