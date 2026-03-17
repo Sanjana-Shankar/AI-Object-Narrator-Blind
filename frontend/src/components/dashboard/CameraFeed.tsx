@@ -14,13 +14,13 @@ interface CameraFeedProps {
 
 const CameraFeed = ({ isLive, objects, onStartFeed, onCapture, isAnalyzing, videoRef }: CameraFeedProps) => {
   return (
-    <div className="relative aspect-video bg-card rounded-2xl border-thick border-border overflow-hidden">
+    <div className="relative aspect-[4/5] sm:aspect-video bg-card rounded-2xl border-thick border-border overflow-hidden">
       {/* Live camera preview */}
       <div className="absolute inset-0 bg-secondary flex items-center justify-center">
         {!isLive ? (
           <button
             onClick={onStartFeed}
-            className="px-8 py-5 bg-primary text-primary-foreground font-display font-extrabold rounded-xl text-lg md:text-xl shadow-brutal hover:scale-[1.02] active:scale-[0.98] transition-transform"
+            className="px-7 py-4 sm:px-8 sm:py-5 bg-primary text-primary-foreground font-display font-extrabold rounded-xl text-base sm:text-lg md:text-xl shadow-brutal hover:scale-[1.02] active:scale-[0.98] transition-transform"
             aria-label="Start live camera feed"
           >
             START LIVE FEED
@@ -58,7 +58,7 @@ const CameraFeed = ({ isLive, objects, onStartFeed, onCapture, isAnalyzing, vide
               <button
                 onClick={onCapture}
                 disabled={isAnalyzing}
-                className="inline-flex items-center gap-2 px-5 py-3 bg-background/80 backdrop-blur-sm border-thick border-border rounded-xl shadow-brutal-sm hover:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-3 sm:px-5 bg-background/80 backdrop-blur-sm border-thick border-border rounded-xl shadow-brutal-sm hover:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
                 aria-label="Capture photo and analyze"
               >
                 <Camera className="w-5 h-5" aria-hidden="true" />

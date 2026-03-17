@@ -65,7 +65,12 @@ export const useNarrator = (isActive: boolean, opts: UseNarratorOptions = {}) =>
 
   const apiBase = useMemo(() => {
     const raw = (import.meta as any).env?.VITE_BACKEND_URL as string | undefined;
-    return (raw && raw.trim()) ? raw.trim().replace(/\/$/, "") : "http://localhost:8000";
+    if (raw && raw.trim()) {
+      return raw.trim().replace(/\/$/, "");
+    }
+
+    const isNative = Boolean((window as any)?.Capacitor?.isNativePlatform?.());
+    return isNative ? "" : "http://localhost:8000";
   }, []);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -155,6 +160,10 @@ export const useNarrator = (isActive: boolean, opts: UseNarratorOptions = {}) =>
       form.append("image", blob, "capture.jpg");
       if (prompt && prompt.trim()) {
         form.append("prompt", prompt.trim());
+      }
+
+      if (!apiBase) {
+        throw new Error("Backend URL is not configured. Set VITE_BACKEND_URL before mobile build.");
       }
 
       const res = await fetch(`${apiBase}/analyze`, { method: "POST", body: form });

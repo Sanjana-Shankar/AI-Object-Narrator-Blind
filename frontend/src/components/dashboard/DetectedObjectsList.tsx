@@ -9,7 +9,7 @@ interface DetectedObjectsListProps {
 const DetectedObjectsList = ({ objects }: DetectedObjectsListProps) => {
   return (
     <div
-      className="bg-card border-thick border-border rounded-2xl p-6"
+      className="bg-card border-thick border-border rounded-2xl p-4 sm:p-6"
       role="region"
       aria-label="Recently detected objects"
     >

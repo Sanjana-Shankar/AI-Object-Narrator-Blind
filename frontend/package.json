@@ -10,9 +10,17 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "mobile:init": "node -e \"console.log('Capacitor config is already committed. Skip init.')\"",
+    "mobile:build": "npm run build",
+    "mobile:copy": "npx cap copy",
+    "mobile:sync": "npx cap sync",
+    "mobile:android:add": "npx cap add android",
+    "mobile:android:open": "npx cap open android",
+    "mobile:android:run": "npx cap run android"
   },
   "dependencies": {
+    "@capacitor/core": "^7.4.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -65,6 +73,8 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/cli": "^7.4.3",
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/typography": "^0.5.16",

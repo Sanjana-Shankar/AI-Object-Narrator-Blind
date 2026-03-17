@@ -10,7 +10,7 @@ interface TranscriptPanelProps {
 const TranscriptPanel = ({ transcript, onSpeak, isSpeaking }: TranscriptPanelProps) => {
   return (
     <div
-      className="bg-card border-thick border-border rounded-2xl p-6 min-h-[120px] flex items-start gap-4"
+      className="bg-card border-thick border-border rounded-2xl p-4 sm:p-6 min-h-[120px] flex items-start gap-4"
       role="region"
       aria-label="Voice narration transcript"
     >
@@ -35,10 +35,10 @@ const TranscriptPanel = ({ transcript, onSpeak, isSpeaking }: TranscriptPanelPro
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -8, opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="text-xl md:text-2xl font-medium leading-snug"
+              className="text-lg sm:text-xl md:text-2xl font-medium leading-snug"
             >
               {transcript || (
-                <span className="text-muted-foreground italic">Waiting for objects…</span>
+                <span className="text-muted-foreground italic">Waiting for objects...</span>
               )}
             </motion.p>
           </AnimatePresence>

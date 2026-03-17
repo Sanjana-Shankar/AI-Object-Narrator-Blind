@@ -1,73 +1,112 @@
-# Welcome to your Lovable project
+# Frontend (React + Vite)
 
-## Project info
+This folder contains the web UI for AI Object Narrator. It can run in the browser and can also be wrapped as a native Android app with Capacitor.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Web development
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+1. Install dependencies.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+npm install
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Start development server.
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+By default, the app expects the backend at http://localhost:8000.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Mobile (Android) with Capacitor
 
-**Use GitHub Codespaces**
+### 1) Configure backend URL for mobile build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Create `.env.production` (or `.env.local`) from `.env.mobile.example` and set a mobile-reachable backend URL.
 
-## What technologies are used for this project?
+Example:
 
-This project is built with:
+```env
+VITE_BACKEND_URL=https://your-backend-url.example.com
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Use HTTPS for mobile whenever possible.
 
-## How can I deploy this project?
+### 2) Build web assets
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```sh
+npm run mobile:build
+```
 
-## Can I connect a custom domain to my Lovable project?
+### 3) Initialize Capacitor (one-time)
 
-Yes, you can!
+```sh
+npm run mobile:init
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### 4) Add Android platform (one-time)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```sh
+npm run mobile:android:add
+```
+
+### 5) Sync/copy web assets to native project
+
+```sh
+npm run mobile:sync
+```
+
+### 6) Open in Android Studio
+
+```sh
+npm run mobile:android:open
+```
+
+From Android Studio, run on an emulator or connected device.
+
+## Testing on a physical phone (Android)
+
+1. Make the backend reachable on your LAN.
+
+Run the backend with `0.0.0.0` and note your laptop IP:
+
+```sh
+uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+```
+
+2. Set `VITE_BACKEND_URL` to your laptop IP.
+
+Example:
+
+```env
+VITE_BACKEND_URL=http://192.168.1.50:8000
+```
+
+3. Build and sync, then run on device.
+
+```sh
+npm run mobile:build
+npm run mobile:sync
+npm run mobile:android:run
+```
+
+4. Optional: Live reload on device (faster UI iteration).
+
+```sh
+npm run dev -- --host
+npx cap run android -l --external
+```
+
+The live reload URL must be reachable by the phone on the same Wi-Fi.
+
+## Backend note for mobile
+
+Ensure backend CORS includes your mobile/web origin(s). For LAN/tunnel testing, set `CORS_ORIGINS` in `backend/.env` to include the frontend origin you are using.
+
+## Troubleshooting
+
+- Error: Backend URL is not configured
+: Set `VITE_BACKEND_URL` and rebuild before running Capacitor sync.
+
+- Camera permission denied
+: Verify app permissions on the Android device/emulator and ensure HTTPS when testing in browser mode.
