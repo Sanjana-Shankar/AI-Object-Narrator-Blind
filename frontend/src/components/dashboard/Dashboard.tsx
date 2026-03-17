@@ -1,18 +1,26 @@
-import { useState } from "react";
-import { Activity, Settings, Power } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Activity, MessageSquare, Settings, Power } from "lucide-react";
 import { useNarrator } from "@/hooks/useNarrator";
+import { useSpeech } from "@/hooks/useSpeech";
 import CameraFeed from "@/components/dashboard/CameraFeed";
 import TranscriptPanel from "@/components/dashboard/TranscriptPanel";
 import DetectedObjectsList from "@/components/dashboard/DetectedObjectsList";
 import SettingsPanel from "@/components/dashboard/SettingsPanel";
 import StatusBadge from "@/components/dashboard/StatusBadge";
 import LandingView from "@/components/dashboard/LandingView";
+import { ChatModal } from "@/components/dashboard/ChatModal";
 
 const Dashboard = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [isLive, setIsLive] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
-  const { objects, currentObjects, transcript, status, isAnalyzing, speechStatus, lastError, videoRef, connect, disconnect, captureAndAnalyze, speakTranscript } = useNarrator(isLive, { autoSpeak: ttsEnabled });
+  const { objects, currentObjects, transcript, requestId, status, isAnalyzing, speechStatus, lastError, lastCaptureHash, videoRef, connect, disconnect, captureAndAnalyze, speakTranscript } = useNarrator(isLive, { autoSpeak: ttsEnabled });
+  const { speak, isSupported: isSpeechSupported } = useSpeech();
+  const [chatOpen, setChatOpen] = useState(false);
+  const [pendingChatHash, setPendingChatHash] = useState<string | null>(null);
+  const [announcedChatHash, setAnnouncedChatHash] = useState<string | null>(null);
+
+  const apiBase = ((import.meta as any).env?.VITE_BACKEND_URL as string | undefined)?.trim()?.replace(/\/$/, "") || "http://localhost:8000";
 
   const handleStart = async () => {
     setHasStarted(true);
@@ -30,12 +38,37 @@ const Dashboard = () => {
     }
   };
 
+  useEffect(() => {
+    if (!hasStarted) return;
+    if (!lastCaptureHash) return;
+    setPendingChatHash(lastCaptureHash);
+  }, [hasStarted, lastCaptureHash]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+    if (!pendingChatHash) return;
+    if (isAnalyzing) return;
+    if (!requestId) return;
+    if (!transcript.trim()) return;
+
+    const shouldWaitForSpeech = ttsEnabled && isSpeechSupported && speechStatus === "speaking";
+    if (shouldWaitForSpeech) return;
+
+    setChatOpen(true);
+    if (ttsEnabled && isSpeechSupported && announcedChatHash !== pendingChatHash) {
+      speak("Chat feature has been enabled, start by asking questions and our chat will answer.");
+      setAnnouncedChatHash(pendingChatHash);
+    }
+    setPendingChatHash(null);
+  }, [announcedChatHash, hasStarted, isAnalyzing, isSpeechSupported, pendingChatHash, requestId, speechStatus, speak, transcript, ttsEnabled]);
+
   if (!hasStarted) {
     return <LandingView onStart={handleStart} />;
   }
 
   return (
     <div className="min-h-svh app-surface text-foreground p-4 md:p-8 selection:bg-primary selection:text-primary-foreground">
+      <ChatModal open={chatOpen} onOpenChange={setChatOpen} apiBase={apiBase} requestId={requestId} />
       {/* Header */}
       <header className="max-w-7xl mx-auto flex flex-wrap justify-between items-center mb-8 gap-4">
         <div className="flex items-center gap-3">
@@ -58,6 +91,13 @@ const Dashboard = () => {
             aria-label={isLive ? "Stop camera feed" : "Start camera feed"}
           >
             <Power className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setChatOpen(true)}
+            className="p-3 bg-card border-thick border-border rounded-xl hover:border-primary transition-colors"
+            aria-label="Open chat"
+          >
+            <MessageSquare className="w-5 h-5" aria-hidden="true" />
           </button>
           <button
             className="p-3 bg-card border-thick border-border rounded-xl hover:border-primary transition-colors"

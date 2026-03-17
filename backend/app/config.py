@@ -85,8 +85,8 @@ def get_settings() -> Settings:
     dotenv_path = Path(__file__).resolve().parents[1] / ".env"
     load_dotenv(dotenv_path=dotenv_path, override=False)
 
-    # Vite dev server in this repo defaults to http://localhost:8080
-    cors = _env("CORS_ORIGINS", "http://localhost:8080") or "http://localhost:8080"
+    # Vite dev server can be accessed via localhost or 127.0.0.1.
+    cors = _env("CORS_ORIGINS", "http://localhost:8080,http://127.0.0.1:8080") or "http://localhost:8080,http://127.0.0.1:8080"
     cors_origins = [o.strip() for o in cors.split(",") if o.strip()]
 
     return Settings(

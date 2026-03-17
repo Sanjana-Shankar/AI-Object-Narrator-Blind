@@ -4,13 +4,15 @@ import json
 from pathlib import Path
 import uuid
 import logging
+import time
 
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
-from .schemas import AnalyzeResponse, DetectedObject
+from .schemas import AnalyzeResponse, DetectedObject, ChatRequest, ChatResponse
+from .context_store import ContextStore, SceneContext
 from .storage import get_storage_paths
 from .yolo_detector import YoloDetector
 from .nemotron_client import NemotronClient, NemotronConfig
@@ -63,6 +65,8 @@ if settings.nemotron_base_url and settings.nemotron_model and settings.nemotron_
             max_tokens=settings.nemotron_max_tokens,
         )
     )
+
+contexts = ContextStore(ttl_s=30 * 60)
 
 
 def _bucket_position(left_pct: float, top_pct: float, w_pct: float, h_pct: float) -> str:
@@ -236,6 +240,17 @@ async def analyze(
     if not transcript:
         transcript = _fallback_transcript(objects, prompt)
 
+    # Store the most recent scene so /chat can answer follow-ups grounded in this capture.
+    contexts.set(
+        SceneContext(
+            request_id=request_id,
+            created_at_ms=int(time.time() * 1000),
+            objects=objects,
+            narration=transcript,
+            prompt=prompt,
+        )
+    )
+
     audio_url: str | None = None
     try:
         audio_name = tts.synthesize(transcript)
@@ -260,3 +275,58 @@ async def analyze(
         nemotron_model=settings.nemotron_model if narration_source == "nemotron" else None,
         request_id=request_id,
     )
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(req: ChatRequest) -> ChatResponse:
+    if nemotron is None:
+        raise HTTPException(status_code=500, detail="Nemotron is not configured (set NVIDIA_API_KEY).")
+
+    ctx = contexts.get(req.request_id)
+    if ctx is None:
+        raise HTTPException(status_code=404, detail="Unknown request_id (capture and analyze first, or it expired).")
+
+    system = (
+        "You are an assistive voice chatbot for blind and low-vision users. "
+        "The user is seated facing a laptop/device camera. "
+        "Answer the user's follow-up question using ONLY the provided detected objects and the prior narration. "
+        "If the question asks about something not present, say you cannot confirm and suggest capturing a new image. "
+        "Keep answers short and spoken-friendly (1-3 sentences). "
+        "Do NOT mention pixels or 'on the screen'."
+    )
+    lang = (req.language or "").strip()
+    if lang:
+        system = system + f" Respond in {lang}."
+
+    scene_payload = {
+        "prior_narration": ctx.narration,
+        "objects": [
+            {
+                "label": o.label,
+                "confidence": round(o.confidence, 3),
+                "relative_direction": _relative_direction(*o.box),
+                "distance_hint": _distance_hint(o.box[2], o.box[3]),
+            }
+            for o in ctx.objects
+        ],
+        "user_question": req.message.strip(),
+    }
+
+    messages: list[dict[str, str]] = [{"role": "system", "content": system}]
+    for m in req.history[-6:]:
+        role = m.role if m.role in ("user", "assistant") else "user"
+        messages.append({"role": role, "content": (m.content or "").strip()})
+    messages.append({"role": "user", "content": json.dumps(scene_payload, ensure_ascii=True)})
+
+    try:
+        import anyio
+
+        answer = await anyio.to_thread.run_sync(lambda: nemotron.narrate(messages=messages))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Nemotron call failed: {e}")
+
+    answer = (answer or "").strip()
+    if not answer:
+        raise HTTPException(status_code=502, detail="Nemotron returned empty answer.")
+
+    return ChatResponse(request_id=req.request_id, answer=answer, nemotron_model=settings.nemotron_model)

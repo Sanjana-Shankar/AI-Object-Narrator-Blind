@@ -15,6 +15,7 @@ type AnalyzeResponse = {
   objects: DetectedObject[];
   transcript: string;
   audio_url?: string | null;
+  request_id: string;
 };
 
 type UseNarratorOptions = {
@@ -58,6 +59,7 @@ export const useNarrator = (isActive: boolean, opts: UseNarratorOptions = {}) =>
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [requestId, setRequestId] = useState<string | null>(null);
   const [lastCaptureHash, setLastCaptureHash] = useState<string | null>(null);
   const [lastSpokenHash, setLastSpokenHash] = useState<string | null>(null);
 
@@ -109,6 +111,7 @@ export const useNarrator = (isActive: boolean, opts: UseNarratorOptions = {}) =>
     setLastError(null);
     setIsAnalyzing(false);
     setAudioUrl(null);
+    setRequestId(null);
     setLastCaptureHash(null);
     setLastSpokenHash(null);
     setStream((prev) => {
@@ -173,6 +176,7 @@ export const useNarrator = (isActive: boolean, opts: UseNarratorOptions = {}) =>
 
       const u = data.audio_url ?? null;
       setAudioUrl(u);
+      setRequestId(typeof data.request_id === "string" ? data.request_id : null);
 
       const shouldAutoSpeak = (opts.autoSpeak ?? true) && captureHash !== lastSpokenHash;
       if (shouldAutoSpeak && nextTranscript) {
@@ -196,6 +200,7 @@ export const useNarrator = (isActive: boolean, opts: UseNarratorOptions = {}) =>
     currentObjects,
     transcript,
     audioUrl,
+    requestId,
     status,
     isLoading,
     isAnalyzing,

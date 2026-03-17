@@ -19,3 +19,21 @@ class AnalyzeResponse(BaseModel):
     narration_source: str = Field(description="nemotron|fallback")
     nemotron_model: str | None = None
     request_id: str
+
+
+class ChatMessage(BaseModel):
+    role: str = Field(description="user|assistant")
+    content: str
+
+
+class ChatRequest(BaseModel):
+    request_id: str
+    message: str
+    history: list[ChatMessage] = Field(default_factory=list)
+    language: str | None = None
+
+
+class ChatResponse(BaseModel):
+    request_id: str
+    answer: str
+    nemotron_model: str | None = None

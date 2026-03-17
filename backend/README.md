@@ -30,7 +30,7 @@ curl -s -X POST "http://localhost:8000/analyze" \
 
 You can set variables in your shell, or create `backend/.env` (ignored by git).
 
-- `CORS_ORIGINS`: Comma-separated origins. Default: `http://localhost:8080`
+- `CORS_ORIGINS`: Comma-separated origins. Default: `http://localhost:8080,http://127.0.0.1:8080`
 - `YOLO_MODEL_PATH`: Path/name for Ultralytics YOLO model. Default: `yolov8n.pt`
 - `YOLO_DEVICE`: `cpu`, `0`, `0,1`, etc. Default: `cpu`
 - `YOLO_CONF`: Confidence threshold (0-1). Default: `0.25`
