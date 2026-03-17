@@ -13,9 +13,14 @@ build/
 ## Backend runtime files
 backend/storage/
 backend/.env
+.env
+frontend/.env.*
 
 ## Node / frontend
 frontend/node_modules/
 frontend/dist/
 .DS_Store
 
+# Frontend env files
+/frontend/.env.local
+/frontend/.env.production

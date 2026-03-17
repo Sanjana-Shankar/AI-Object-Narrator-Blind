@@ -106,7 +106,7 @@ Ensure backend CORS includes your mobile/web origin(s). For LAN/tunnel testing, 
 ## Troubleshooting
 
 - Error: Backend URL is not configured
-: Set `VITE_BACKEND_URL` and rebuild before running Capacitor sync.
+  : Set `VITE_BACKEND_URL` and rebuild before running Capacitor sync.
 
 - Camera permission denied
-: Verify app permissions on the Android device/emulator and ensure HTTPS when testing in browser mode.
+  : Verify app permissions on the Android device/emulator and ensure HTTPS when testing in browser mode.
