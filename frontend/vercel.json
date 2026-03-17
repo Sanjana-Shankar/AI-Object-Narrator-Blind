@@ -1,6 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
+    {
+      "source": "/app/:path*",
+      "destination": "https://ai-object-narrator-blind.onrender.com/app/:path*"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
