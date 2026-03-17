@@ -2,9 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/app/:path*",
-      "destination": "https://ai-object-narrator-blind.onrender.com/app/:path*"
+      "source": "/api/:path*",
+      "destination": "https://ai-object-narrator-blind.onrender.com/:path*"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
