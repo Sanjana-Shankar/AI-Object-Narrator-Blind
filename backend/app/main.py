@@ -11,8 +11,8 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .schemas import AnalyzeResponse, DetectedObject
-from .storage import get_storage_paths
 from .yolo_detector import YoloDetector
+from .storage import get_storage_paths
 from .nemotron_client import NemotronClient, NemotronConfig
 from .tts import TtsSynthesizer, TtsConfig
 

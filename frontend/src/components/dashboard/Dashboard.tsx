@@ -14,7 +14,9 @@ const Dashboard = () => {
   const [isLive, setIsLive] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [userGoal, setUserGoal] = useState("");
-  const { objects, currentObjects, transcript, status, isAnalyzing, speechStatus, lastError, videoRef, connect, disconnect, captureAndAnalyze, speakTranscript } = useNarrator(isLive, { autoSpeak: ttsEnabled });
+  const isNative = Boolean((window as any)?.Capacitor?.isNativePlatform?.());
+  const [cameraFacing, setCameraFacing] = useState<"environment" | "user">(isNative ? "environment" : "environment");
+  const { objects, currentObjects, transcript, status, isAnalyzing, speechStatus, lastError, videoRef, videoDebug, videoDevices, activeDeviceId, connect, disconnect, switchCamera, selectCameraDevice, cycleCameraDevice, refreshDevices, captureAndAnalyze, speakTranscript } = useNarrator(isLive, { autoSpeak: ttsEnabled, facingMode: cameraFacing, preferDeviceLabel: isNative ? "camera2" : undefined });
 
   const handleStart = async () => {
     setHasStarted(true);
@@ -29,6 +31,14 @@ const Dashboard = () => {
     } else {
       await connect();
       setIsLive(true);
+    }
+  };
+
+  const handleFlipCamera = async () => {
+    const next = cameraFacing === "environment" ? "user" : "environment";
+    setCameraFacing(next);
+    if (isLive) {
+      await switchCamera(next);
     }
   };
 
@@ -126,6 +136,15 @@ const Dashboard = () => {
                 onCapture={() => captureAndAnalyze(userGoal)}
                 isAnalyzing={isAnalyzing}
                 videoRef={videoRef}
+                videoDebug={videoDebug}
+                onFlipCamera={isNative ? undefined : handleFlipCamera}
+                onNextCamera={cycleCameraDevice}
+                showNextCamera={isNative && videoDevices.length > 1}
+                showCameraPicker={isNative}
+                cameraDevices={videoDevices}
+                activeDeviceId={activeDeviceId}
+                onSelectCamera={selectCameraDevice}
+                onRefreshCameras={refreshDevices}
               />
               <TranscriptPanel
                 transcript={lastError ? `Error: ${lastError}` : transcript}
@@ -186,6 +205,15 @@ const Dashboard = () => {
               onCapture={() => captureAndAnalyze(userGoal)}
               isAnalyzing={isAnalyzing}
               videoRef={videoRef}
+              videoDebug={videoDebug}
+              onFlipCamera={isNative ? undefined : handleFlipCamera}
+              onNextCamera={cycleCameraDevice}
+              showNextCamera={isNative && videoDevices.length > 1}
+              showCameraPicker={isNative}
+              cameraDevices={videoDevices}
+              activeDeviceId={activeDeviceId}
+              onSelectCamera={selectCameraDevice}
+              onRefreshCameras={refreshDevices}
             />
             <TranscriptPanel
               transcript={lastError ? `Error: ${lastError}` : transcript}

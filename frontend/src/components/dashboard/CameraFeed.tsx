@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { DetectedObject } from "@/hooks/useNarrator";
-import { Camera } from "lucide-react";
+import { Camera, RefreshCcw } from "lucide-react";
 import type React from "react";
 
 interface CameraFeedProps {
@@ -10,9 +10,18 @@ interface CameraFeedProps {
   onCapture: () => void | Promise<void>;
   isAnalyzing: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
+  videoDebug?: { readyState: number; width: number; height: number } | null;
+  onFlipCamera?: () => void | Promise<void>;
+  onNextCamera?: () => void | Promise<void>;
+  showNextCamera?: boolean;
+  showCameraPicker?: boolean;
+  cameraDevices?: MediaDeviceInfo[];
+  activeDeviceId?: string | null;
+  onSelectCamera?: (deviceId: string) => void | Promise<void>;
+  onRefreshCameras?: () => void | Promise<void>;
 }
 
-const CameraFeed = ({ isLive, objects, onStartFeed, onCapture, isAnalyzing, videoRef }: CameraFeedProps) => {
+const CameraFeed = ({ isLive, objects, onStartFeed, onCapture, isAnalyzing, videoRef, videoDebug, onFlipCamera, onNextCamera, showNextCamera, showCameraPicker, cameraDevices, activeDeviceId, onSelectCamera, onRefreshCameras }: CameraFeedProps) => {
   return (
     <div className="relative aspect-[4/5] sm:aspect-video bg-card rounded-2xl border-thick border-border overflow-hidden">
       {/* Live camera preview */}
@@ -66,7 +75,65 @@ const CameraFeed = ({ isLive, objects, onStartFeed, onCapture, isAnalyzing, vide
                   {isAnalyzing ? "ANALYZING..." : "CAPTURE + ANALYZE"}
                 </span>
               </button>
+              {onFlipCamera && (
+                <button
+                  onClick={onFlipCamera}
+                  className="inline-flex items-center gap-2 px-4 py-3 bg-background/80 backdrop-blur-sm border-thick border-border rounded-xl shadow-brutal-sm hover:border-primary"
+                  aria-label="Flip camera"
+                >
+                  <RefreshCcw className="w-4 h-4" aria-hidden="true" />
+                  <span className="text-xs font-bold uppercase tracking-wide">FLIP</span>
+                </button>
+              )}
+              {showNextCamera && onNextCamera && (
+                <button
+                  onClick={onNextCamera}
+                  className="inline-flex items-center gap-2 px-4 py-3 bg-background/80 backdrop-blur-sm border-thick border-border rounded-xl shadow-brutal-sm hover:border-primary"
+                  aria-label="Switch camera device"
+                >
+                  <RefreshCcw className="w-4 h-4" aria-hidden="true" />
+                  <span className="text-xs font-bold uppercase tracking-wide">NEXT CAM</span>
+                </button>
+              )}
             </div>
+            {videoDebug && (
+              <div className="absolute top-4 right-4 z-10 rounded-lg bg-background/80 px-3 py-2 text-[11px] font-mono text-foreground shadow-brutal-sm">
+                readyState: {videoDebug.readyState}<br />
+                size: {videoDebug.width}x{videoDebug.height}
+              </div>
+            )}
+            {showCameraPicker && (
+              <div className="absolute top-4 left-4 z-10 rounded-lg bg-background/80 px-3 py-2 text-[11px] font-mono text-foreground shadow-brutal-sm">
+                <label className="block mb-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Camera
+                </label>
+                {cameraDevices && cameraDevices.length > 0 ? (
+                  <select
+                    value={activeDeviceId ?? cameraDevices[0]?.deviceId ?? ""}
+                    onChange={(e) => onSelectCamera?.(e.target.value)}
+                    className="w-full rounded-md border border-border bg-background px-2 py-1 text-[11px]"
+                    aria-label="Select camera device"
+                  >
+                    {cameraDevices.map((d) => (
+                      <option key={d.deviceId} value={d.deviceId}>
+                        {d.label || "Camera"}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="text-[10px] text-muted-foreground">No cameras detected</div>
+                )}
+                {onRefreshCameras && (
+                  <button
+                    onClick={onRefreshCameras}
+                    className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-primary"
+                    aria-label="Refresh camera devices"
+                  >
+                    Refresh
+                  </button>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
